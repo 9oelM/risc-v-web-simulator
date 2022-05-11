@@ -1,0 +1,25 @@
+{
+  "name": "@emscripten-cplusplus-webpack-example/example-wasm",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "url": "https://github.com/9oelm/emscripten-cplusplus-webpack-example"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "emscripten",
+    "cplusplus",
+    "webpack",
+    "monorepo"
+  ],
+  "author": "9oelM <hj923@hotmail.com>",
+  "license": "MIT",
+  "types": "./index.d.ts",
+  "devDependencies": {
+    "@types/es6-promise": "^3.3.0"
+  },
+  "dependencies": {}
+}
