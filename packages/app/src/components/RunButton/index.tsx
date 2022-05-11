@@ -58,6 +58,7 @@ export const RunButtonImpure: FC<RunButtonImpureProps> =
           `i8`,
           ALLOC_NORMAL
         )
+        const latestRunTime = `Latest execution time: ${new Date().toLocaleString()}`
         let executionOutputCharPtr: ReturnType<typeof _run_kite_once> | null =
           null
         let errorPtr: number | null = null
@@ -70,11 +71,13 @@ export const RunButtonImpure: FC<RunButtonImpureProps> =
           console.log(executionOutputCharPtr)
 
           const executionOutputInJSString = UTF8ToString(executionOutputCharPtr)
-          setExecutionOutput(executionOutputInJSString)
+          setExecutionOutput(`${latestRunTime}\n${executionOutputInJSString}`)
         } catch (e: any) {
           errorPtr = e as number
           executionOutputCharPtr = _get_exception_message(errorPtr)
-          setExecutionOutput(UTF8ToString(executionOutputCharPtr))
+          setExecutionOutput(
+            `${latestRunTime}\n${UTF8ToString(executionOutputCharPtr)}`
+          )
         } finally {
           ;[codeCharPtr, memoryCharPtr, registerCharPtr].forEach(_free)
           if (executionOutputCharPtr) _free(executionOutputCharPtr)

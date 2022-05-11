@@ -36,6 +36,7 @@ export const RiscVWebSimulatorThemeProvider: FC<PropsWithChildren<{}>> = ({
             padding: 0;
             // https://developer.chrome.com/blog/overscroll-behavior/
             overscroll-behavior-y: none;
+            background: #121212;
           }
           * {
             font-family: "Roboto Mono";

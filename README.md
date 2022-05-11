@@ -1,6 +1,6 @@
 # risc-v-web-simulator
 
-Yet another RISC-V Simulator on the web, for fun. Based on [Kite](https://github.com/yonsei-icsl/kite), RISC-V architecture simulator I used for my computer architecture class ([EEE3530](https://icsl.yonsei.ac.kr/eee3530/)) at Yonsei University. Turned it into Webassembly to use it on web. Again, it's just for fun. Lol.
+Yet another RISC-V Simulator on the web, for fun. Based on [Kite](https://github.com/yonsei-icsl/kite), RISC-V architecture simulator I used for my computer architecture class ([EEE3530](https://icsl.yonsei.ac.kr/eee3530/)) at Yonsei University. Turned it into Webassembly to use it on web. Again, it's just for fun.... and probably education. Lol.
 
 ## Use it!
 
