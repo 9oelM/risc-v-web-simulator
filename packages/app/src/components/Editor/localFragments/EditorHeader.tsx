@@ -14,6 +14,8 @@ export const EditorHeaderPure = () => {
         whiteSpace: `nowrap`,
         overflow: `hidden`,
         textOverflow: `ellipsis`,
+        // display: `flex`,
+        // alignItems: `center`,
       }}
     >
       <h1
@@ -113,6 +115,17 @@ export const EditorHeaderPure = () => {
           WebAssembly
         </a>
         !
+        <a
+          css={{
+            fontSize: `0.8rem`,
+            top: `6px`,
+            left: `5px`,
+            position: `relative`,
+          }}
+          href=""
+        >
+          <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2F9oelm.github.io%2Frisc-v-web-simulator%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" />
+        </a>
       </p>
     </header>
   )
