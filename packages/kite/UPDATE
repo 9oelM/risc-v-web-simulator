@@ -1,0 +1,148 @@
+#######################################################
+# Kite: An architecture simulator for five-stage      #
+# pipeline modeling of RISC-V instruction set         #
+# Developed by William J. Song                        #
+# School of Electrical Engineering, Yonsei University #
+# Version: 1.7                                        #
+#######################################################
+
+Update history:
+* Version 1.0 (May 21, 2019)
+    - Initial release
+
+* Version 1.1 (May 23, 2019)
+    - A possible bug was fixed in that the execution result of an instruction
+      may affect its next run if the instruction is re-executed in a loop
+      (or replayed for any reasons). The instruction information is reset in
+      writeback stage when it retires. Fortunately, no single error has been
+      reported because of the bug, and it is highly unlikely.  
+    - Another bug was found for conditional branches not updating PC when
+      branch target address is zero. Thus, branch instructions (i.e., beq, bge,
+      blt, bne) could not be used to forcefully terminate a program by setting
+      the next PC to zero.
+
+* Version 1.2 (May 31, 2019)
+    - PC = 0 is reserved as invalid address in instruction memory, but it no
+      longer prints a debug message, "Instruction memory has reached out of
+      code segment (or end of program)." For PC = 0, instruction fetch stage
+      silently stops fetching instructions from instruction memory. PC = 0 is
+      re-purposed for branch instructions to disable instruction fetching
+      until the next PC is resolved.
+    - Stall cycles for conditional branch instructions are changed to match
+      those of textbook implementation. Every conditional branch instruction
+      now causes three stall cycles until the next PC is resolved.
+      Unconditional jump instructions do not incur stalls unless they have
+      dependency on preceding instructions.
+    - "bool stall" is removed from inst_t class as it turns out to be
+      unnecessary for pipeline execution.
+    - execute() function of proc_t is re-organized for better code readability
+      and maintenance.
+    - ALU detects divide-by-zero exceptions. In fact, it does not raise an
+      exception upon detection but prints out a debug message. If debug
+      messages are not enabled, divide-by-zero exceptions are simply silenced.
+
+* Version 1.3 (June 1, 2019)
+    - Data forwarding feature is added. Since there is no way for a
+      value-producing instruction to figure out which subsequent instructions
+      are dependent on it, dependent instructions must catch the output of
+      preceding instruction if it has become ready but not yet written back to
+      register file. To enable this feature, inst_t was modified to add
+      "bool rd_ready" field to indicate that rd value has been calculated and
+      thus can be forwarded to whomever depends on it. When determining data
+      hazards in register file, dependent instructions check if the rd value
+      of latest producer has become ready and thus can proceed as if there is
+      no data hazard.
+    - Branch predictor is added.
+
+* Version 1.4 (June 13, 2019)
+    - A bug is fixed for the dependency checking table of register file. With
+      the addition of data forwarding feature, the entries of dependency
+      checking table do not always point to retiring instructions. Hence,
+      simply clearing the entries of dependency checking table at the writeback
+      of instructions accidentally misses data hazards in some situations.
+      The fix is to double-check if the latest producer of a destination
+      register is still a retiring instruction. If so, the entry of dependency
+      checking table is cleared. Or otherwise, the entry retains its current
+      pointer since it indicates that a subsequent instruction is a new latest
+      producer of the register.
+
+* Version 1.5 (June 17, 2019)
+    - When calculating branch prediction accuracy, the stat counter of
+      num_br_predicts inadvertently counts predictions made for wrong-path
+      instructions. An update is made that only on-path instructions are
+      counted and reflected in the branch prediction accuracy.
+
+* Version 1.6 (June 28, 2019)
+    - Data forwarding and branch prediction become options to choose when
+      compiling the simulator. To enable the data forwarding, compile with
+      make -j OPT="-DDATA_FWD" or set $OPT=-DDATA_FWD in the Makefile.
+      Similarly, enabling the branch prediction uses make -j OPT="-DBR_PRED"
+      or $OPT=-DBR_PRED in the Makefile.
+    - Data memory is split into data cache (data_cache.h/cc) and memory
+      (data_memory.h/cc) parts. The data cache is directly hooked up to the
+      memory stage of pipeline, backed by the data memory. The data memory is
+      organized as an one-dimensional array of 64-bit unsigned integers, which
+      still requires strict 8-byte alignment for data accesses. The data cache
+      is flexibly configurable with variable cache size, block size, and set
+      associativity. A miss in the cache retrieves data from the lower-level
+      memory. Miss penalty is configurable but set to zero by default.
+    - inst_t is updated by renaming "is_taken" flag to "pred_taken", and a new
+      variable "pred_target" is added to the class that carries a predicted
+      branch target address obtained from the branch target buffer (BTB). When
+      a branch prediction is made in the fetch stage, an inst collects both
+      pieces of information, i.e., pred_taken and pred_target. These are used
+      later in the writeback stage to confirm if the control flow has made a
+      correct progress. A Pipeline flush occurs because of one of two reasons.
+      The first cause is simply due to branch mis-prediction, and other is when
+      the BTB supplies a wrong target address despite the correct prediction
+      of taken or not-taken decision.
+    - A possible bug is found that having a multi-cycle instruction (e.g., mul,
+      div) alone in the pipeline may prematurely finish a simulation loop.
+      Extra conditions are added to the simulation loop to check if ALU and
+      data memory are busy. The simulation can terminate when all pipeline
+      registers, ALU, and data memory are empty.
+
+* Version 1.7 (April 26, 2020)
+    - A bug is fixed in inst_memory.cc when parsing UJ-type instruction
+      (i.e., jal).
+    - A redundant condition in proc_t::fetch() is removed. It checked if inst
+      was valid before get_op_type(inst->op) == op_sb_type for conditional
+      branches. It was unnecessary since the this line of code was never
+      executed when inst_memory->read(pc) returned null.
+    - A few error checking lines are added to reg_file.cc. Previously undefined
+      registers in reg_state were initialized to zero by default. After the
+      update, all the registers must be explicitly initialized.
+    - Error checking lines are added to data_memory.cc to detect an undefined
+      memory address or value on the left or right side of an equal sign.
+    - Documentation is updated by proofreading and structurally reorganizing.
+
+* Version 1.8 (Apr 25, 2022)
+    - A typo in the documentation is fixed, i.e., sd instruction format in the
+      supported instruction table.
+    - RISC-V specification defines that a jalr instruction resets the LSB of
+      a new PC, which requires an extra AND operation with uint64_t(-2). This
+      minor change is added to Kite to conform to the specification but has no
+      impacts on simulation results.
+    - Support for a U-type instruction (i.e., lui instruction) has been added.
+    - When loading a program code, constant values are checked if they fit into
+      the immediate field of instructions, i.e., 12 bits for I-type and 20 bits
+      for U-type instructions. Likewise, PC-relative distances of SB-type and
+      UJ-type instructions must fit into the immediate fields.
+    - block_t constructors in data_cache.h are fixed. The constructors did not
+      initialize the "last_access" variable that records the clock cycle that
+      the corresponding block was last accessed in the data cache.
+    - data_cache.cc is fixed for smoother extension to a set-associative cache
+      for future assignments.
+    - print_state() function is added to reg_file_t. It was previously directly
+      printed in proc.cc. This change removes the need for the read() function
+      of reg_file_t.
+    - is_num_str() macro in defs.h is split into is_pos/neg_num_str() to 
+      differentiate checking for a positive or negative integer.
+    - In the constructor of data_memory_t, memory and accessed and zeroed out
+      for initialization.
+    - #include <cstring> is added to data_memory.cc because of the compiler
+      error of "memset was not declared in this scope."
+    - The default size of memory is increased from 1KB to 4KB. The first 1KB is
+      assumed to be reserved for the code segment and thus inaccessible by load
+      or store instructions. Addresses in the code segment are used as PCs of
+      instructions.

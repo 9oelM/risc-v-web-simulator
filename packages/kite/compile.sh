@@ -1,0 +1,3 @@
+#!/bin/bash
+
+em++ -O3 -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["cwrap", "allocate", "intArrayFromString", "ALLOC_NORMAL", "UTF8ToString"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="kite"' -s 'EXPORTED_FUNCTIONS=["_run_kite_once", "_free", "_get_exception_message"]' -s "ENVIRONMENT='web'" -o ./kite_wasm.js kite_wasm.cc alu.cc br_predictor.cc data_cache.cc data_memory.cc inst_memory.cc inst.cc pipe_reg.cc proc.cc reg_file.cc

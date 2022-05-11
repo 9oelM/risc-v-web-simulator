@@ -1,0 +1,16 @@
+{
+  "name": "@risc-v-web-simulator/kite",
+  "version": "1.0.0",
+  "description": "*Kite* is an architecture simulator that models a five-stage pipeline of RISC-V instruction set. The initial version of Kite was developed in 2019 primarily for an educational purpose as a part of EEE3530 Computer Architecture. Kite implements the five-stage pipeline model described in *Computer Organization and Design, RISC-V Edition: The Hardware and Software Interface by D. Patterson and J. Hennessey* ([Link to Amazon](https://www.amazon.com/Computer-Organization-Design-RISC-V-Architecture/dp/0128122757)). The objective of Kite is to provide students with an easy-to-use simulation framework and precise timing model as described in the book. It supports most of basic instructions introduced in the book such as `add`, `slli`, `ld`, `sd`, `beq` instructions. Simulator users can easily compose RISC-V assembly programs and execute them through the provided pipeline model for entry-level architecture studies. The pipeline model in Kite provides several functionalities including instruction dependency check (i.e., data hazards), pipeline stalls, data forwarding or bypassing (optional), branch predictions (optional), data cache structures, etc.",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "types": "./index.d.ts"
+}

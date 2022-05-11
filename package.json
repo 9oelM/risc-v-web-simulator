@@ -1,8 +1,8 @@
 {
-  "name": "emscripten-cplusplus-webpack-example",
+  "name": "risc-v-web-simulator",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/9oelM/emscripten-cplusplus-webpack-example.git",
+  "repository": "https://github.com/9oelM/risc-v-web-simulator.git",
   "author": "9oelM <hj923@hotmail.com>",
   "license": "MIT",
   "private": false,
