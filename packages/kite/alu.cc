@@ -3,8 +3,10 @@
 
 using namespace std;
 
-alu_t::alu_t(uint64_t *m_ticks) :
+alu_t::alu_t(uint64_t *m_ticks, bool* is_debug_on, bool* is_data_fwd_on) :
     ticks(m_ticks),
+    is_data_fwd_on(is_data_fwd_on),
+    is_debug_on(is_debug_on),
     exit_ticks(0),
     run_inst(0) {
 }
@@ -22,11 +24,11 @@ inst_t* alu_t::get_output() {
         run_inst = 0;
         // Mark the rd value of instruction is ready for forwarding.
         // The rd value of ld instruction becomes ready in the memory stage.
-#ifdef DATA_FWD
-        if(inst && (inst->rd_num > 0) && (inst->op != op_ld)) {
-            inst->rd_ready = true;
+        if (*is_data_fwd_on) {
+            if(inst && (inst->rd_num > 0) && (inst->op != op_ld)) {
+                inst->rd_ready = true;
+            }
         }
-#endif
     }
     return inst;
 }
@@ -94,14 +96,14 @@ void alu_t::run(inst_t *m_inst) {
         case op_jal:  { m_inst->rd_val = m_inst->pc + 4; break; }
         default:      { break; } // Nothing to do
     }
-#ifdef DEBUG
-    if(divide_by_zero) {
-        cout << *ticks << " : alu : divide-by-zero exception" << endl;
-    } 
-    if(exit_ticks > *ticks) {
-        cout << *ticks << " : alu : " << get_inst_str(run_inst, true) << endl;
+    if (*is_debug_on) {
+        if(divide_by_zero) {
+            cout << *ticks << " : alu : divide-by-zero exception" << endl;
+        } 
+        if(exit_ticks > *ticks) {
+            cout << *ticks << " : alu : " << get_inst_str(run_inst, true) << endl;
+        }
     }
-#endif
 }
 
 // Remove an instruction from the ALU.

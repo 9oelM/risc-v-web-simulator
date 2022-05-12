@@ -13,10 +13,18 @@
 
 class proc_t {
 public:
-    proc_t();
+    proc_t(
+        bool *is_debug_on,
+        bool *is_data_fwd_on,
+        bool *is_br_pred_on
+    );
     ~proc_t();
 
-    void init(const char *m_program_code, const char *memory_state, const char *reg_state);  // Processor initialization
+    void init(
+        const char *m_program_code, 
+        const char *memory_state, 
+        const char *reg_state
+    );  // Processor initialization
     void run(std::ostringstream& program_log);                             // Run the processor pipeline.
 
 private:
@@ -30,10 +38,10 @@ private:
 
     uint64_t stalls;                        // Number of stall cycles
     uint64_t num_insts;                     // Number of instructions
-#ifdef BR_PRED
+// #ifdef BR_PRED
     uint64_t num_br_predicts;               // Number of branch predictions
     uint64_t num_br_mispredicts;            // Number of branch mis-predictions
-#endif
+// #endif
     uint64_t num_flushes;                   // Number of pipeline flushes
     uint64_t ticks;                         // Clock ticks (cycles)
     uint64_t pc;                            // Program counter
@@ -47,6 +55,10 @@ private:
     data_cache_t *data_cache;               // Data cache
     pipe_reg_t if_id_preg, id_ex_preg;      // Pipeline registers
     pipe_reg_t ex_mem_preg, mem_wb_preg;
+
+    bool *is_debug_on;
+    bool *is_data_fwd_on;
+    bool *is_br_pred_on;
 };
 
 #endif

@@ -28,8 +28,10 @@ public:
 // Cache
 class data_cache_t {
 public:
-    data_cache_t(uint64_t *m_ticks, uint64_t m_cache_size,
-                 uint64_t m_block_size = 8, uint64_t m_ways = 1);
+    data_cache_t(
+        uint64_t *m_ticks, uint64_t m_cache_size, 
+        bool *is_debug_on, bool *is_data_fwd_on,
+        uint64_t m_block_size = 8, uint64_t m_ways = 1);
     ~data_cache_t();
 
     void connect(data_memory_t *m_memory);      // Connect to the lower-level memory.
@@ -61,6 +63,9 @@ private:
     uint64_t num_writebacks;                    // Number of writebacks
 
     inst_t *missed_inst;                        // Missed memory instruction
+
+    bool *is_debug_on;
+    bool *is_data_fwd_on;
 };
 
 #endif 

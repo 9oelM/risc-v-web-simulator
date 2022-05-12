@@ -10,6 +10,21 @@ https://9oelm.github.io/risc-v-web-simulator/
 
 Detailed instruction on how to use it is found at [the repository of Kite](https://github.com/yonsei-icsl/kite).
 
+## Developing
+
+### Modification of Kite's code
+To enable communication with javascript from Webassembly binary, a few things have been changed in Kite's code:
+
+- Kite does not receive files as an input anymore. It receives `const char* program_code, const char* memory_state, const char* reg_state` as parameters and runs it. `const char*` is directly supplied from javascirpt.
+- Kite throws error instead of `cerr` and `exit(1);`. For example: 
+    ```cpp
+    if(val != 1) {
+        throw std::logic_error("Cache Error: number of sets must be a power of two");
+    }
+    ```
+  This allows javascript to catch an error and display the error message.
+- [Emscripten](https://github.com/emscripten-core/emscripten) is used to compile C++ into Webassembly. More details in compile.sh.
+
 ## Todo
 - cleanup duplicate css styles (now just copied and pasted cuz im lazy)
 - responsive design for mobile environments

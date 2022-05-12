@@ -7,7 +7,7 @@
 // Arithmetic-logical unit (ALU)
 class alu_t {
 public:
-    alu_t(uint64_t *m_ticks);
+    alu_t(uint64_t *m_ticks, bool* is_debug_on, bool *is_data_fwd_on);
     ~alu_t();
 
     inst_t* get_output();       // Get an instruction leaving the ALU.
@@ -19,6 +19,8 @@ private:
     uint64_t *ticks;            // Pointer to processor clock ticks
     uint64_t exit_ticks;        // Exit ticks that a run_inst can leave the ALU
     inst_t *run_inst;           // An instruction currently being executed
+    bool *is_data_fwd_on;
+    bool *is_debug_on;
 };
 
 #endif

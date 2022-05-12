@@ -61,7 +61,7 @@
 
 .react-tabs__tab-panel--selected {
   display: block;
-  height: 90%;
+  height: calc(100% - 2rem);
   width: 100%;
 }
 

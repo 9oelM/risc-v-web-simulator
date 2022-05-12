@@ -5,13 +5,16 @@
 
 using namespace std;
 
-proc_t::proc_t() :
+proc_t::proc_t(
+    bool *is_debug_on,
+    bool *is_data_fwd_on,
+    bool *is_br_pred_on
+) :
     stalls(0),
     num_insts(0),
-#ifdef BR_PRED
-    num_br_predicts(0),
-    num_br_mispredicts(0),
-#endif
+    is_debug_on(is_debug_on),
+    is_data_fwd_on(is_data_fwd_on),
+    is_br_pred_on(is_br_pred_on),
     num_flushes(0),
     ticks(0),
     pc(4),  // The first instruction is loaded from PC = 4.
@@ -22,6 +25,11 @@ proc_t::proc_t() :
     alu(0),
     data_memory(0),
     data_cache(0) {
+
+    if (*is_debug_on) {
+        num_br_predicts = 0;
+        num_br_mispredicts = 0;
+    }
 }
 
 proc_t::~proc_t() {
@@ -36,15 +44,19 @@ proc_t::~proc_t() {
 }
 
 // Processor initialization
-void proc_t::init(const char *m_program_code, const char *memory_state, const char *reg_state) {
+void proc_t::init(
+    const char *m_program_code, 
+    const char *memory_state, 
+    const char *reg_state
+) {
     inst_memory = new inst_memory_t(m_program_code);    // Create an instruction memory.
     br_predictor = new br_predictor_t(16);              // Create a branch predictor.
     br_target_buffer = new br_target_buffer_t(16);      // Create a branch target buffer.
     reg_file = new reg_file_t(reg_state);                        // Create a register file.
-    alu = new alu_t(&ticks);                            // Create an ALU.
+    alu = new alu_t(&ticks, is_debug_on, is_data_fwd_on);;                            // Create an ALU.
 
     data_memory = new data_memory_t(memory_state, &ticks, 4096, 0);   // Create a data memory.
-    data_cache = new data_cache_t(&ticks, 1024, 8, 1);  // Create a data cache.
+    data_cache = new data_cache_t(&ticks, 1024, is_debug_on, is_data_fwd_on, 8, 1);  // Create a data cache.
     data_memory->connect(data_cache);                   // Connect the memory to cache.
     data_cache->connect(data_memory);                   // Connect the cache to memory.
 }
@@ -82,35 +94,36 @@ void proc_t::writeback() {
         if(inst->rd_num > 0) {
             reg_file->write(inst, inst->rd_num, inst->rd_val);
         }
-#ifdef DEBUG
-        cout << ticks << " : writeback : " << get_inst_str(inst, true) << endl;
-#endif
+        if (*is_debug_on) {
+            cout << ticks << " : writeback : " << get_inst_str(inst, true) << endl;
+        }
         // Update the branch predictor and branch target buffer for conditional branches.
         if(inst->branch_target) {
-#ifdef BR_PRED
-            num_br_predicts++;
-            bool is_taken = (inst->branch_target != (inst->pc+4));
-            br_predictor->update(inst->pc, is_taken);
-            if(is_taken) {
-                br_target_buffer->update(inst->pc, inst->branch_target);
-            }
-            // Predicted branch target and actual branch target are different.
-            // Flush and restart the pipeline.
-            if(inst->pred_target != inst->branch_target) {
-                // A branch mis-prediction (i.e., direction) or target mis-prediction
-                // (i.e., address) needs to flush the pipeline.
-                num_br_mispredicts += (inst->pred_taken != is_taken);
-                // Flush the pipeline, and set a correct PC.
-                flush();
+            if (*is_br_pred_on) {
+                num_br_predicts++;
+                bool is_taken = (inst->branch_target != (inst->pc+4));
+                br_predictor->update(inst->pc, is_taken);
+                if(is_taken) {
+                    br_target_buffer->update(inst->pc, inst->branch_target);
+                }
+                // Predicted branch target and actual branch target are different.
+                // Flush and restart the pipeline.
+                if(inst->pred_target != inst->branch_target) {
+                    // A branch mis-prediction (i.e., direction) or target mis-prediction
+                    // (i.e., address) needs to flush the pipeline.
+                    num_br_mispredicts += (inst->pred_taken != is_taken);
+                    // Flush the pipeline, and set a correct PC.
+                    flush();
+                    pc = inst->branch_target;
+                    if (*is_debug_on) {
+                        cout << ticks << " : pipeline flush : restart at PC = "     << pc << endl;
+                    }
+                } else {
+                // No branch prediction is used. The next PC of a branch is set here to avoid
+                // speculative executions.
                 pc = inst->branch_target;
-#ifdef DEBUG
-                cout << ticks << " : pipeline flush : restart at PC = " << pc << endl;
-#endif
+                }
             }
-#else       // No branch prediction is used. The next PC of a branch is set here to avoid
-            // speculative executions.
-            pc = inst->branch_target;
-#endif
         }
         // Retire the instruction.
         delete inst;
@@ -136,12 +149,12 @@ void proc_t::memory() {
             mem_wb_preg.write(mem_inst); mem_inst = 0;
         }
     }
-#ifdef DEBUG
-    inst_t *inst = mem_wb_preg.read();
-    if(inst) {
-        cout << ticks << " : memory : " << get_inst_str(inst, true) << endl;
+    if (*is_debug_on) {
+        inst_t *inst = mem_wb_preg.read();
+        if(inst) {
+            cout << ticks << " : memory : " << get_inst_str(inst, true) << endl;
+        }
     }
-#endif
 }
 
 // Execute stage
@@ -162,11 +175,11 @@ void proc_t::execute() {
             ex_mem_preg.write(inst);
         }
     }
-#ifdef DEBUG
-    if((inst = ex_mem_preg.read())) {
-        cout << ticks << " : execute : " << get_inst_str(inst, true) << endl;
+    if (*is_debug_on) {
+        if((inst = ex_mem_preg.read())) {
+            cout << ticks << " : execute : " << get_inst_str(inst, true) << endl;
+        }
     }
-#endif
 }
 
 // Instruction decode stage
@@ -188,11 +201,11 @@ void proc_t::decode() {
             }
         }
     }
-#ifdef DEBUG
-    if((inst = id_ex_preg.read())) {
-        cout << ticks << " : decode : " << get_inst_str(inst, true) << endl;
+    if (*is_debug_on) {
+        if((inst = id_ex_preg.read())) {
+            cout << ticks << " : decode : " << get_inst_str(inst, true) << endl;
+        }
     }
-#endif
 }
 
 // Instruction fetch stage
@@ -208,16 +221,16 @@ void proc_t::fetch() {
             if_id_preg.write(inst);
             // Make a branch prediction for a conditional branch.
             if(get_op_type(inst->op) == op_sb_type) {
-#ifdef BR_PRED
-                // Set the PC to a branch target if the branch is predicted to be taken.
-                inst->pred_taken = br_predictor->is_taken(inst->pc);
-                pc = inst->pred_target = inst->pred_taken ?
-                                         br_target_buffer->get_target(inst->pc) : pc;
-#else
-                // No branch prediction is used.
-                // Instruction fetch is disabled until the next PC is resolved.
-                pc = 0;
-#endif
+                if (*is_br_pred_on) {
+                    // Set the PC to a branch target if the branch is predicted to be taken.
+                    inst->pred_taken = br_predictor->is_taken(inst->pc);
+                    pc = inst->pred_target = inst->pred_taken ?
+                                            br_target_buffer->get_target(inst->pc) : pc;
+                } else {
+                    // No branch prediction is used.
+                    // Instruction fetch is disabled until the next PC is resolved.
+                    pc = 0;
+                }
             }
         }
     }
@@ -225,11 +238,11 @@ void proc_t::fetch() {
         // Preceding instruction is blocking. Pipeline stalls.
         stalls++;
     }
-#ifdef DEBUG
-    if((inst = if_id_preg.read())) {
-        cout << ticks << " : fetch : " << get_inst_str(inst, true) << endl;
+    if (*is_debug_on) {
+        if((inst = if_id_preg.read())) {
+            cout << ticks << " : fetch : " << get_inst_str(inst, true) << endl;
+        }
     }
-#endif
 }
 
 // Flush the pipeline. The pipeline uses a simplest stall-and-drain approach to
@@ -257,14 +270,14 @@ void proc_t::print_stats(std::ostringstream& program_log) {
     program_log.precision(3);
     program_log << "Cycles per instruction = " << fixed
          << double(ticks) / double(num_insts) << endl;
-#ifdef BR_PRED
-    program_log << "Number of pipeline flushes = " << num_flushes << endl;
-    program_log << "Branch prediction accuracy = " << fixed
-         << (num_br_predicts ?
-             double(num_br_predicts-num_br_mispredicts) / double(num_br_predicts) : 0)
-         << " (" << num_br_predicts-num_br_mispredicts << "/" << num_br_predicts
-         << ")" << endl;
-#endif
+    if (*is_br_pred_on) {
+        program_log << "Number of pipeline flushes = " << num_flushes << endl;
+        program_log << "Branch prediction accuracy = " << fixed
+            << (num_br_predicts ?
+                double(num_br_predicts-num_br_mispredicts) / double(num_br_predicts) : 0)
+            << " (" << num_br_predicts-num_br_mispredicts << "/" << num_br_predicts
+            << ")" << endl;
+    }
     program_log.precision(-1);
     // Print data cache stats.
     data_cache->print_stats(program_log);

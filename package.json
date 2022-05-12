@@ -18,6 +18,7 @@
     "monorepo"
   ],
   "scripts": {
+    "dev": "npm run dev -w packages/app",
     "lint": "eslint .",
     "lint:debug": "eslint . --debug",
     "lint:fix": "eslint . --fix"

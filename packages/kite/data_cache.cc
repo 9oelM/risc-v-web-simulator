@@ -4,13 +4,18 @@
 
 using namespace std;
 
-data_cache_t::data_cache_t(uint64_t *m_ticks, uint64_t m_cache_size,
-                           uint64_t m_block_size, uint64_t m_ways) :
+data_cache_t::data_cache_t(
+    uint64_t *m_ticks, uint64_t m_cache_size,
+    bool *is_debug_on, bool *is_data_fwd_on,
+    uint64_t m_block_size, uint64_t m_ways
+) :
     memory(0),
     ticks(m_ticks),
     blocks(0),
     cache_size(m_cache_size),
     block_size(m_block_size),
+    is_debug_on(is_debug_on),
+    is_data_fwd_on(is_data_fwd_on),
     num_sets(0),
     num_ways(m_ways),
     block_offset(0),
@@ -94,9 +99,9 @@ void data_cache_t::read(inst_t *m_inst) {
         block->last_access = *ticks;
         // Read a doubleword in the block.
         m_inst->rd_val = *(block->data + ((addr & block_mask) >> 3));
-#ifdef DATA_FWD
-        m_inst->rd_ready = true;
-#endif
+        if (*is_data_fwd_on) {
+            m_inst->rd_ready = true;
+        }
         num_accesses++;
         num_loads++;
     }
@@ -104,10 +109,10 @@ void data_cache_t::read(inst_t *m_inst) {
         missed_inst = m_inst;
         memory->load_block(addr & ~block_mask, block_size);
         num_misses++;
-#ifdef DEBUG
-        cout << *ticks << " : cache miss : addr = " << addr
+        if (*is_debug_on) {
+            cout << *ticks << " : cache miss : addr = " << addr
              << " (tag = " << tag << ", set = " << set_index << ")" << endl;
-#endif
+        }
     }
 }
 
@@ -140,10 +145,10 @@ void data_cache_t::write(inst_t *m_inst) {
         missed_inst = m_inst;
         memory->load_block(addr & ~block_mask, block_size);
         num_misses++;
-#ifdef DEBUG
-        cout << *ticks << " : cache miss : addr = " << addr
+        if (*is_debug_on) {
+            cout << *ticks << " : cache miss : addr = " << addr
              << " (tag = " << tag << ", set = " << set_index << ")" << endl;
-#endif
+        }
     }
 }
 
@@ -157,12 +162,12 @@ void data_cache_t::handle_response(int64_t *m_data) {
     // Block replacement
     block_t *allocator = &blocks[set_index][0];
     if(allocator->dirty) { num_writebacks++; }
-#ifdef DEBUG
-    if(allocator->valid) {
-        cout << *ticks << " : cache block eviction : addr = " << addr
-             << " (tag = " << tag << ", set = " << set_index << ")" << endl;
+    if (*is_debug_on) {
+        if(allocator->valid) {
+            cout << *ticks << " : cache block eviction : addr = " << addr
+                << " (tag = " << tag << ", set = " << set_index << ")" << endl;
+        }
     }
-#endif
     // Place the missed block.
     *allocator = block_t(tag, m_data, /* valid */ true);
 
