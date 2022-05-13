@@ -6,9 +6,9 @@
 using namespace std;
 
 proc_t::proc_t(
-    bool *is_debug_on,
-    bool *is_data_fwd_on,
-    bool *is_br_pred_on
+    int8_t *is_debug_on,
+    int8_t *is_data_fwd_on,
+    int8_t *is_br_pred_on
 ) :
     stalls(0),
     num_insts(0),
@@ -70,11 +70,11 @@ void proc_t::run(std::ostringstream& program_log) {
         // Increment clock ticks.
         ticks++;
         // Process pipeline stages backwards.
-        writeback();
-        memory();
-        execute();
-        decode();
-        fetch();
+        writeback(program_log);
+        memory(program_log);
+        execute(program_log);
+        decode(program_log);
+        fetch(program_log);
     }
     program_log << "Done." << endl;
     // Print pipeline stats.
@@ -82,7 +82,7 @@ void proc_t::run(std::ostringstream& program_log) {
 }
 
 // Writeback stage
-void proc_t::writeback() {
+void proc_t::writeback(std::ostringstream& program_log) {
     // Read an instruction from the MEM/WB pipeline register.
     inst_t *inst = mem_wb_preg.read();
     if(inst) {
@@ -95,7 +95,7 @@ void proc_t::writeback() {
             reg_file->write(inst, inst->rd_num, inst->rd_val);
         }
         if (*is_debug_on) {
-            cout << ticks << " : writeback : " << get_inst_str(inst, true) << endl;
+            program_log << ticks << " : writeback : " << get_inst_str(inst, true) << endl;
         }
         // Update the branch predictor and branch target buffer for conditional branches.
         if(inst->branch_target) {
@@ -116,7 +116,7 @@ void proc_t::writeback() {
                     flush();
                     pc = inst->branch_target;
                     if (*is_debug_on) {
-                        cout << ticks << " : pipeline flush : restart at PC = "     << pc << endl;
+                        program_log << ticks << " : pipeline flush : restart at PC = "     << pc << endl;
                     }
                 } else {
                 // No branch prediction is used. The next PC of a branch is set here to avoid
@@ -131,7 +131,7 @@ void proc_t::writeback() {
 }
 
 // Memory stage
-void proc_t::memory() {
+void proc_t::memory(std::ostringstream& program_log) {
     static inst_t *mem_inst = 0;
     // Memory stage makes a progress only if the MEM/WB pipeline register is free.
     if(mem_wb_preg.is_free()) {
@@ -140,11 +140,11 @@ void proc_t::memory() {
             // Remove the instruction from the EX/MEM pipeline register.
             ex_mem_preg.clear();
             // Access the data memory for a load or store.
-            if(mem_inst->op == op_ld) { data_cache->read(mem_inst); }
-            else if(mem_inst->op == op_sd) { data_cache->write(mem_inst); }
+            if(mem_inst->op == op_ld) { data_cache->read(mem_inst, program_log); }
+            else if(mem_inst->op == op_sd) { data_cache->write(mem_inst, program_log); }
         }
         // Data cache is done with the instruction.
-        if(!data_cache->run()) {
+        if(!data_cache->run(program_log)) {
             // Write the instruction in the MEM/WB pipeline register.
             mem_wb_preg.write(mem_inst); mem_inst = 0;
         }
@@ -152,13 +152,13 @@ void proc_t::memory() {
     if (*is_debug_on) {
         inst_t *inst = mem_wb_preg.read();
         if(inst) {
-            cout << ticks << " : memory : " << get_inst_str(inst, true) << endl;
+            program_log << ticks << " : memory : " << get_inst_str(inst, true) << endl;
         }
     }
 }
 
 // Execute stage
-void proc_t::execute() {
+void proc_t::execute(std::ostringstream& program_log) {
     inst_t *inst = 0;
     // Execution stage makes a progress only if the EX/MEM pipeline register is free.
     if(ex_mem_preg.is_free()) {
@@ -167,7 +167,7 @@ void proc_t::execute() {
             // Remove the instruction from the ID/EX pipeline register, and let the ALU
             // execute the instruction.
             id_ex_preg.clear();
-            alu->run(inst);
+            alu->run(inst, program_log);
         }
         // ALU is done with the instruction.
         if((inst = alu->get_output())) {
@@ -177,13 +177,13 @@ void proc_t::execute() {
     }
     if (*is_debug_on) {
         if((inst = ex_mem_preg.read())) {
-            cout << ticks << " : execute : " << get_inst_str(inst, true) << endl;
+            program_log << ticks << " : execute : " << get_inst_str(inst, true) << endl;
         }
     }
 }
 
 // Instruction decode stage
-void proc_t::decode() {
+void proc_t::decode(std::ostringstream& program_log) {
     inst_t *inst = 0;
     // Decode stage makes a progress only if the ID/EX pipeline register is free.
     if(id_ex_preg.is_free()) {
@@ -203,13 +203,13 @@ void proc_t::decode() {
     }
     if (*is_debug_on) {
         if((inst = id_ex_preg.read())) {
-            cout << ticks << " : decode : " << get_inst_str(inst, true) << endl;
+            program_log << ticks << " : decode : " << get_inst_str(inst, true) << endl;
         }
     }
 }
 
 // Instruction fetch stage
-void proc_t::fetch() {
+void proc_t::fetch(std::ostringstream& program_log) {
     inst_t *inst = 0;
     // Fetch stage makes a progress only if the IF/ID pipeline register is free.
     if(if_id_preg.is_free()) {
@@ -240,7 +240,7 @@ void proc_t::fetch() {
     }
     if (*is_debug_on) {
         if((inst = if_id_preg.read())) {
-            cout << ticks << " : fetch : " << get_inst_str(inst, true) << endl;
+            program_log << ticks << " : fetch : " << get_inst_str(inst, true) << endl;
         }
     }
 }

@@ -6,7 +6,7 @@ using namespace std;
 
 data_cache_t::data_cache_t(
     uint64_t *m_ticks, uint64_t m_cache_size,
-    bool *is_debug_on, bool *is_data_fwd_on,
+    int8_t *is_debug_on, int8_t *is_data_fwd_on,
     uint64_t m_block_size, uint64_t m_ways
 ) :
     memory(0),
@@ -79,7 +79,7 @@ void data_cache_t::connect(data_memory_t *m_memory) { memory = m_memory; }
 bool data_cache_t::is_free() const { return !missed_inst; }
 
 // Read data from cache.
-void data_cache_t::read(inst_t *m_inst) {
+void data_cache_t::read(inst_t *m_inst, std::ostringstream& program_log) {
     // Check the memory address alignment.
     uint64_t addr = m_inst->memory_addr;
     if(addr & 0b111) {
@@ -110,14 +110,14 @@ void data_cache_t::read(inst_t *m_inst) {
         memory->load_block(addr & ~block_mask, block_size);
         num_misses++;
         if (*is_debug_on) {
-            cout << *ticks << " : cache miss : addr = " << addr
+            program_log << *ticks << " : cache miss : addr = " << addr
              << " (tag = " << tag << ", set = " << set_index << ")" << endl;
         }
     }
 }
 
 // Write data in memory.
-void data_cache_t::write(inst_t *m_inst) {
+void data_cache_t::write(inst_t *m_inst, std::ostringstream& program_log) {
     // Check the memory address alignment.
     uint64_t addr = m_inst->memory_addr;
     if(addr & 0b111) {
@@ -146,14 +146,14 @@ void data_cache_t::write(inst_t *m_inst) {
         memory->load_block(addr & ~block_mask, block_size);
         num_misses++;
         if (*is_debug_on) {
-            cout << *ticks << " : cache miss : addr = " << addr
+            program_log << *ticks << " : cache miss : addr = " << addr
              << " (tag = " << tag << ", set = " << set_index << ")" << endl;
         }
     }
 }
 
 // Handle a memory response.
-void data_cache_t::handle_response(int64_t *m_data) {
+void data_cache_t::handle_response(int64_t *m_data, std::ostringstream& program_log) {
     // Calculate the set index and tag.
     uint64_t addr = missed_inst->memory_addr;
     uint64_t set_index = (addr & set_mask) >> block_offset;
@@ -164,7 +164,7 @@ void data_cache_t::handle_response(int64_t *m_data) {
     if(allocator->dirty) { num_writebacks++; }
     if (*is_debug_on) {
         if(allocator->valid) {
-            cout << *ticks << " : cache block eviction : addr = " << addr
+            program_log << *ticks << " : cache block eviction : addr = " << addr
                 << " (tag = " << tag << ", set = " << set_index << ")" << endl;
         }
     }
@@ -172,15 +172,15 @@ void data_cache_t::handle_response(int64_t *m_data) {
     *allocator = block_t(tag, m_data, /* valid */ true);
 
     // Replay the cache access.
-    if(missed_inst->op == op_ld) { read(missed_inst); }
-    else { write(missed_inst); }
+    if(missed_inst->op == op_ld) { read(missed_inst, program_log); }
+    else { write(missed_inst, program_log); }
     // Clear the missed instruction so that the cache becomes free.
     missed_inst = 0;
 }
 
 // Run data cache.
-bool data_cache_t::run() {
-    memory->run();          // Run the data memory.
+bool data_cache_t::run(std::ostringstream& program_log) {
+    memory->run(program_log);          // Run the data memory.
     return missed_inst;     // Return true if the cache is busy.
 }
 

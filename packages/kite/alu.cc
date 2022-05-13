@@ -1,9 +1,10 @@
 #include <iostream>
+#include <sstream>
 #include "alu.h"
 
 using namespace std;
 
-alu_t::alu_t(uint64_t *m_ticks, bool* is_debug_on, bool* is_data_fwd_on) :
+alu_t::alu_t(uint64_t *m_ticks, int8_t *is_debug_on, int8_t *is_data_fwd_on) :
     ticks(m_ticks),
     is_data_fwd_on(is_data_fwd_on),
     is_debug_on(is_debug_on),
@@ -39,7 +40,7 @@ bool alu_t::is_free() {
 }
 
 // Execute an instruction.
-void alu_t::run(inst_t *m_inst) {
+void alu_t::run(inst_t *m_inst, std::ostringstream& program_log) {
     // Set run_inst and its exit ticks that the run_inst can leave the ALU.
     run_inst = m_inst;
     exit_ticks = *ticks + m_inst->alu_latency - 1;
@@ -98,10 +99,10 @@ void alu_t::run(inst_t *m_inst) {
     }
     if (*is_debug_on) {
         if(divide_by_zero) {
-            cout << *ticks << " : alu : divide-by-zero exception" << endl;
+            program_log << *ticks << " : alu : divide-by-zero exception" << endl;
         } 
         if(exit_ticks > *ticks) {
-            cout << *ticks << " : alu : " << get_inst_str(run_inst, true) << endl;
+            program_log << *ticks << " : alu : " << get_inst_str(run_inst, true) << endl;
         }
     }
 }

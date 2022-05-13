@@ -14,9 +14,9 @@
 class proc_t {
 public:
     proc_t(
-        bool *is_debug_on,
-        bool *is_data_fwd_on,
-        bool *is_br_pred_on
+        int8_t *is_debug_on,
+        int8_t *is_data_fwd_on,
+        int8_t *is_br_pred_on
     );
     ~proc_t();
 
@@ -28,11 +28,11 @@ public:
     void run(std::ostringstream& program_log);                             // Run the processor pipeline.
 
 private:
-    void writeback();                       // Writeback stage
-    void memory();                          // Memory stage
-    void execute();                         // Execute stage
-    void decode();                          // Instruction decode stage
-    void fetch();                           // Instruction fetch stage
+    void writeback(std::ostringstream& program_log);                       // Writeback stage
+    void memory(std::ostringstream& program_log);                          // Memory stage
+    void execute(std::ostringstream& program_log);                         // Execute stage
+    void decode(std::ostringstream& program_log);                          // Instruction decode stage
+    void fetch(std::ostringstream& program_log);                           // Instruction fetch stage
     void flush();                           // Flush pipeline.
     void print_stats(std::ostringstream& program_log);                     // Print pipeline stats.
 
@@ -56,9 +56,9 @@ private:
     pipe_reg_t if_id_preg, id_ex_preg;      // Pipeline registers
     pipe_reg_t ex_mem_preg, mem_wb_preg;
 
-    bool *is_debug_on;
-    bool *is_data_fwd_on;
-    bool *is_br_pred_on;
+    int8_t *is_debug_on;
+    int8_t *is_data_fwd_on;
+    int8_t *is_br_pred_on;
 };
 
 #endif
