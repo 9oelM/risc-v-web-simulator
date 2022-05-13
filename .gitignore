@@ -23,3 +23,6 @@ yarn-error.log*
 storybook-static
 
 dist
+
+kite_wasm.wasm
+kite_wasm.js
