@@ -117,6 +117,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
     onClickLoadExample,
     onSelectTabIndex,
     tabIndex,
+    isEditorStateNewlySaved,
   }) => {
     const theme = useTheme()
     return (
@@ -139,7 +140,11 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
             RVSSettings,
           }}
         />
-        <EditorHeaderPure />
+        <EditorHeaderPure
+          {...{
+            isEditorStateNewlySaved,
+          }}
+        />
         <div
           css={{
             display: `flex`,

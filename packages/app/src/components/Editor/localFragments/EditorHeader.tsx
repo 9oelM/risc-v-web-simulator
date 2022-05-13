@@ -1,7 +1,9 @@
 import { useTheme } from "@emotion/react"
-import React from "react"
+import React, { FC } from "react"
 
-export const EditorHeaderPure = () => {
+export const EditorHeaderPure: FC<{ isEditorStateNewlySaved: boolean }> = ({
+  isEditorStateNewlySaved,
+}) => {
   const theme = useTheme()
 
   return (
@@ -126,6 +128,15 @@ export const EditorHeaderPure = () => {
         >
           <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2F9oelm.github.io%2Frisc-v-web-simulator%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" />
         </a>
+        <span
+          css={{
+            marginLeft: `1rem`,
+            transition: `all 1s ease-out`,
+            color: isEditorStateNewlySaved ? theme.text : theme.background,
+          }}
+        >
+          auto-saved
+        </span>
       </p>
     </header>
   )

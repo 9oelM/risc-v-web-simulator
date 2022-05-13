@@ -39,21 +39,22 @@ enum WasmRequestStatus {
   SUCCESS = `SUCCESS`,
 }
 
-/**
- * I was too lazy to integrate the app with redux
- * which can easily be integrated with redux-persist,
- * so I am just writing this function to restore state
- * from localstorage by myself
- */
 function useSaveStateToLocalStorage({
   RVSSettings,
   editor_states: { program_code, reg_state, memory_state },
-}: LocalStorgeState) {
-  const timeout = useRef<null | number>(null)
-  const DEBOUNCE_SECS = 1_000
+}: LocalStorgeState): boolean {
+  const firstCbTimeout = useRef<null | number>(null)
+  const secondCbTimeout = useRef<null | number>(null)
+  const DEBOUNCE_SECS = 5_000
+  const NEWLY_SAVED_DURATION_SECS = 5_000
+  const [isEditorStateNewlySaved, setNewlySaved] = useState(
+    Number.MIN_SAFE_INTEGER
+  )
+
   useEffect(() => {
-    if (timeout.current) window.clearTimeout(timeout.current)
-    timeout.current = window.setTimeout(() => {
+    if (firstCbTimeout.current) window.clearTimeout(firstCbTimeout.current)
+    if (secondCbTimeout.current) window.clearTimeout(secondCbTimeout.current)
+    firstCbTimeout.current = window.setTimeout(() => {
       LocalStorageManager.saveStateToLocalStorage({
         RVSSettings,
         editor_states: {
@@ -62,8 +63,14 @@ function useSaveStateToLocalStorage({
           memory_state,
         },
       })
+      setNewlySaved((prev) => prev + 1)
+      secondCbTimeout.current = window.setTimeout(() => {
+        setNewlySaved((prev) => prev + 1)
+      }, NEWLY_SAVED_DURATION_SECS)
     }, DEBOUNCE_SECS)
-  }, [RVSSettings, program_code, reg_state, memory_state])
+  }, [RVSSettings, program_code, reg_state, memory_state, setNewlySaved])
+
+  return isEditorStateNewlySaved % 2 === 0
 }
 
 function useRestoreStateFromLocalStorage({
@@ -114,7 +121,7 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
     const [RVSSettings, setRVSSettings] = useStateWithMemoizedCallback(
       RVSConstants.defaultRVSSettings
     )
-    useSaveStateToLocalStorage({
+    const isEditorStateNewlySaved = useSaveStateToLocalStorage({
       RVSSettings,
       editor_states: {
         program_code: codeState,
@@ -156,6 +163,7 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
           setCodeState,
           RVSSettings,
           setRVSSettings,
+          isEditorStateNewlySaved,
         }}
       />
     )
@@ -172,6 +180,7 @@ export type EditorRootPureProps = {
   setCodeState: React.Dispatch<React.SetStateAction<string>>
   setRVSSettings: React.Dispatch<React.SetStateAction<RVSSettings>>
   RVSSettings: RVSSettings
+  isEditorStateNewlySaved: boolean
 } & {
   kiteWasmRequestResult: React.MutableRefObject<Error | KiteWasm | null>
 }
