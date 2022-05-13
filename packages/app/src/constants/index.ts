@@ -10,8 +10,12 @@ import { defaultRVSSettings } from "./RVSSettings"
  */
 export const RVSConstants = {
   defaultRVSSettings,
-  program_code,
-  reg_state,
-  memory_state,
-  matrixCalculationExample,
+  examples: {
+    matrixCalculationExample,
+    defaultExample: {
+      program_code,
+      reg_state,
+      memory_state,
+    },
+  },
 }

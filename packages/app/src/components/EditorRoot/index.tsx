@@ -43,11 +43,15 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
     const [wasmRequestStatus, setWasmRequestStatus] = useState(
       WasmRequestStatus.LOADING
     )
-    const [codeState, setCodeState] = useStateWithMemoizedCallback(program_code)
-    const [memoryState, setMemoryState] =
-      useStateWithMemoizedCallback(memory_state)
-    const [registerState, setRegisterState] =
-      useStateWithMemoizedCallback(reg_state)
+    const [codeState, setCodeState] = useStateWithMemoizedCallback(
+      RVSConstants.examples.defaultExample.program_code
+    )
+    const [memoryState, setMemoryState] = useStateWithMemoizedCallback(
+      RVSConstants.examples.defaultExample.memory_state
+    )
+    const [registerState, setRegisterState] = useStateWithMemoizedCallback(
+      RVSConstants.examples.defaultExample.reg_state
+    )
     const [RVSSettings, setRVSSettings] = useStateWithMemoizedCallback(
       RVSConstants.defaultRVSSettings
     )

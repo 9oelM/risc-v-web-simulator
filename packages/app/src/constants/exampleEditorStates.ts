@@ -1,5 +1,5 @@
 export const matrixCalculationExample = {
-  code_state: `#######################################################
+  program_code: `#######################################################
   # Kite: An architecture simulator for five-stage      #
   # pipeline modeling of RISC-V instruction set         #
   # Developed by William J. Song                        #

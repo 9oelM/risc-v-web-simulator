@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback } from "react"
+import React, { Suspense, useCallback, useMemo } from "react"
 import { FC } from "react"
 import { enhance } from "../../utilities/essentials"
 import { EditorFallback } from "./fallback"
@@ -11,13 +11,13 @@ import { EditorRootPureProps } from "../EditorRoot"
 import { RunButtonImpure } from "../RunButton"
 import { useStateWithMemoizedCallback } from "../../hooks/useStateWithMemoizedCallback"
 import { EditorHeaderPure } from "./localFragments/EditorHeader"
-import { LoadingAnimationIcon } from "../Util/LoadingAnimationIcon"
 import { ErrorBoundary } from "../Util/WithErrorBoundary"
 import { WHFullLoadingAnimation } from "../Util/WHFullLoadingAnimation"
 import { RVSConstants } from "../../constants"
+import { ExamplesPanelImpure } from "./localFragments/ExamplesPanel"
 
 const SettingsPanelImpure = React.lazy(() =>
-  import(`./localFragments/Settings`).then(({ SettingsPanelImpure }) => ({
+  import(`./localFragments/SettingsPanel`).then(({ SettingsPanelImpure }) => ({
     default: SettingsPanelImpure,
   }))
 )
@@ -48,11 +48,16 @@ export const EditorImpure: FC<EditorImpureProps> = enhance<EditorImpureProps>(
         },
         [setRegisterState]
       )
-    const onClickLoadExample = useCallback(() => {
-      setRegisterState(RVSConstants.matrixCalculationExample.reg_state)
-      setCodeState(RVSConstants.matrixCalculationExample.code_state)
-      setMemoryState(RVSConstants.matrixCalculationExample.memory_state)
-    }, [])
+    const [tabIndex, onSelectTabIndex] = useStateWithMemoizedCallback(0)
+    const onClickLoadExample = useCallback(
+      (example: keyof typeof RVSConstants[`examples`]) => () => {
+        setRegisterState(RVSConstants.examples[example].reg_state)
+        setCodeState(RVSConstants.examples[example].program_code)
+        setMemoryState(RVSConstants.examples[example].memory_state)
+        onSelectTabIndex(0)
+      },
+      [setRegisterState, setCodeState, setMemoryState, onSelectTabIndex]
+    )
     const [executionOutput, setExecutionOutput] = useStateWithMemoizedCallback<
       null | string
     >(null)
@@ -67,6 +72,8 @@ export const EditorImpure: FC<EditorImpureProps> = enhance<EditorImpureProps>(
           onClickLoadExample,
           executionOutput,
           setExecutionOutput,
+          tabIndex,
+          onSelectTabIndex,
         }}
       />
     )
@@ -83,7 +90,11 @@ export type EditorPureProps = Omit<
   onRegisterStateChange: React.ChangeEventHandler<HTMLTextAreaElement>
   executionOutput: string | null
   setExecutionOutput: React.Dispatch<React.SetStateAction<string | null>>
-  onClickLoadExample: VoidFunction
+  onClickLoadExample: (
+    example: keyof typeof RVSConstants[`examples`]
+  ) => () => void
+  tabIndex: number
+  onSelectTabIndex: React.Dispatch<React.SetStateAction<number>>
 }
 
 export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
@@ -100,6 +111,8 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
     RVSSettings,
     setRVSSettings,
     onClickLoadExample,
+    onSelectTabIndex,
+    tabIndex,
   }) => {
     const theme = useTheme()
     return (
@@ -146,7 +159,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
               },
             }}
           >
-            <Tabs>
+            <Tabs selectedIndex={tabIndex} onSelect={onSelectTabIndex}>
               <TabList>
                 <Tab>Code</Tab>
                 <Tab>Memory</Tab>
@@ -200,9 +213,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                     background: theme.background,
                     color: theme.text,
                   }}
-                >
-                  {reg_state}
-                </textarea>
+                ></textarea>
               </TabPanel>
               <TabPanel>
                 <ErrorBoundary
@@ -239,50 +250,11 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                   }
                 >
                   <Suspense fallback={<WHFullLoadingAnimation />}>
-                    <section
-                      css={{
-                        background: theme.background,
-                        color: theme.text,
-                        padding: `0rem 0.5rem`,
+                    <ExamplesPanelImpure
+                      {...{
+                        onClickLoadExample,
                       }}
-                    >
-                      <p
-                        css={{
-                          color: theme.warnText,
-                          textDecoration: `underline`,
-                          fontSize: `0.8rem`,
-                        }}
-                      >
-                        Loading an example will overwrite existing code, memory,
-                        register states!
-                      </p>
-                      <button
-                        css={{
-                          borderRadius: `0.5rem`,
-                          padding: `0.5rem`,
-                          border: `1px solid ${theme.buttonBorder}`,
-                          background: theme.buttonBg,
-                          color: theme.buttonText,
-                          cursor: `pointer`,
-                          fontSize: `0.8rem`,
-                          "&:hover": {
-                            background: theme.buttonBgHover,
-                          },
-                        }}
-                        onClick={onClickLoadExample}
-                      >
-                        Load
-                      </button>
-                      <p
-                        css={{
-                          display: `inline`,
-                          fontSize: `0.8rem`,
-                        }}
-                      >
-                        {` `} Matrix addition & multiplication (C = C + A * B)
-                        example
-                      </p>
-                    </section>
+                    />
                   </Suspense>
                 </ErrorBoundary>
               </TabPanel>
