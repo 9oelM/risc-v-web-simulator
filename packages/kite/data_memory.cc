@@ -48,10 +48,10 @@ data_memory_t::~data_memory_t() {
 void data_memory_t::connect(data_cache_t *m_cache) { cache = m_cache; }
 
 // Run the data memory.
-void data_memory_t::run() {
+void data_memory_t::run(std::ostringstream& program_log) {
     if(req_block && (*ticks >= resp_ticks)) {
         // Invoke the upper-level cache to handle a returned response.
-        cache->handle_response(req_block);
+        cache->handle_response(req_block, program_log);
         // Clear the requested block.
         req_block = 0;
     }

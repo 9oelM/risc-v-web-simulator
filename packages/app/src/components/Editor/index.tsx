@@ -1,5 +1,4 @@
-import { KiteWasm } from "@risc-v-web-simulator/kite"
-import React, { useCallback, useEffect } from "react"
+import React, { Suspense, useCallback } from "react"
 import { FC } from "react"
 import { enhance } from "../../utilities/essentials"
 import { EditorFallback } from "./fallback"
@@ -7,15 +6,20 @@ import { EditorFallback } from "./fallback"
 import { jsx, useTheme } from "@emotion/react"
 import { ExecutionOutputImpure } from "../ExecutionOutput"
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs"
-import {
-  memory_state,
-  program_code,
-  reg_state,
-} from "../../constants/constants"
+import { reg_state } from "../../constants/editorDefaultState"
 import { EditorRootPureProps } from "../EditorRoot"
 import { RunButtonImpure } from "../RunButton"
-import { useStateWithMemoizedCallback } from "../../hooks/useMemoizedCbState"
+import { useStateWithMemoizedCallback } from "../../hooks/useStateWithMemoizedCallback"
 import { EditorHeaderPure } from "./localFragments/EditorHeader"
+import { LoadingAnimationIcon } from "../Util/LoadingAnimationIcon"
+import { ErrorBoundary } from "../Util/WithErrorBoundary"
+import { WHFullLoadingAnimation } from "../Util/WHFullLoadingAnimation"
+
+const SettingsPanelImpure = React.lazy(() =>
+  import(`./localFragments/Settings`).then(({ SettingsPanelImpure }) => ({
+    default: SettingsPanelImpure,
+  }))
+)
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type EditorImpureProps = Omit<EditorRootPureProps, `wasmRequestStatus`>
@@ -85,6 +89,8 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
     kiteWasmRequestResult,
     executionOutput,
     setExecutionOutput,
+    RVSSettings,
+    setRVSSettings,
   }) => {
     const theme = useTheme()
     return (
@@ -104,6 +110,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
             memoryState,
             setExecutionOutput,
             kiteWasmRequestResult,
+            RVSSettings,
           }}
         />
         <EditorHeaderPure />
@@ -113,14 +120,21 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
             width: `100%`,
             height: `calc(100% - 2rem)`,
             background: theme.background,
+            [`@media (max-width: 710px)`]: {
+              flexDirection: `column`,
+            },
           }}
         >
           <section
             css={{
               display: `flex`,
-              width: `60%`,
+              width: `55%`,
               height: `100%`,
               background: theme.background,
+              [`@media (max-width: 710px)`]: {
+                width: `100%`,
+                height: `65%`,
+              },
             }}
           >
             <Tabs>
@@ -128,6 +142,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                 <Tab>Code</Tab>
                 <Tab>Memory</Tab>
                 <Tab>Register</Tab>
+                <Tab>Settings</Tab>
               </TabList>
               <TabPanel>
                 <textarea
@@ -136,8 +151,10 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                   spellCheck={false}
                   css={{
                     overflowY: `scroll`,
-                    height: `100%`,
-                    width: `100%`,
+                    // give some space below with +1rem more
+                    height: `calc(100% - 1.5rem)`,
+                    padding: `0.5rem`,
+                    width: `calc(100% - 0.5rem)`,
                     background: theme.background,
                     color: theme.text,
                   }}
@@ -150,8 +167,10 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                   spellCheck={false}
                   css={{
                     overflowY: `scroll`,
-                    height: `100%`,
-                    width: `100%`,
+                    // give some space below with +1rem more
+                    height: `calc(100% - 1.5rem)`,
+                    padding: `0.5rem`,
+                    width: `calc(100% - 0.5rem)`,
                     background: theme.background,
                     color: theme.text,
                   }}
@@ -164,8 +183,10 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                   spellCheck={false}
                   css={{
                     overflowY: `scroll`,
-                    height: `100%`,
-                    width: `100%`,
+                    // give some space below with +1rem more
+                    height: `calc(100% - 1.5rem)`,
+                    padding: `0.5rem`,
+                    width: `calc(100% - 0.5rem)`,
                     background: theme.background,
                     color: theme.text,
                   }}
@@ -173,15 +194,47 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                   {reg_state}
                 </textarea>
               </TabPanel>
+              <TabPanel>
+                <ErrorBoundary
+                  Fallback={
+                    <div
+                      css={{
+                        color: `red`,
+                      }}
+                    >
+                      Settings failed to load.
+                    </div>
+                  }
+                >
+                  <Suspense fallback={<WHFullLoadingAnimation />}>
+                    <SettingsPanelImpure
+                      {...{
+                        RVSSettings,
+                        setRVSSettings,
+                      }}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </TabPanel>
             </Tabs>
           </section>
           <section
             css={{
               display: `flex`,
-              width: `40%`,
+              width: `45%`,
               height: `calc(100% - 2rem)`,
               background: theme.background,
               borderLeft: `1px solid ${theme.buttonBorder}`,
+              [`@media (max-width: 710px)`]: {
+                position: `absolute`,
+                bottom: 0,
+                left: 0,
+                width: `100%`,
+                height: `30%`,
+                borderLeft: `none`,
+                paddingTop: `0.5rem`,
+                borderTop: `1px solid ${theme.buttonBorder}`,
+              },
             }}
           >
             <ExecutionOutputImpure

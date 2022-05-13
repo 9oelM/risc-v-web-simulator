@@ -7,9 +7,10 @@ export const commonConfig: webpack.Configuration = {
   // https://webpack.js.org/plugins/split-chunks-plugin/
   optimization: {
     splitChunks: {
-      chunks: `async`,
-      minSize: 20000,
+      chunks: `all`,
+      minSize: 500,
       minRemainingSize: 0,
+      minSizeReduction: 400,
       minChunks: 1,
       maxAsyncRequests: 30,
       maxInitialRequests: 30,
@@ -65,12 +66,13 @@ export const commonConfig: webpack.Configuration = {
     extensions: [`.tsx`, `.ts`, `.js`],
   },
   output: {
-    filename: `bundle.js`,
+    filename: `[hash].[name].js`,
     path: path.resolve(__dirname, `..`, `dist`),
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, `..`, `public`, `index.html`),
+      favicon: path.join(__dirname, `..`, `public`, `risc-v-logo.png`),
     }),
   ],
 }

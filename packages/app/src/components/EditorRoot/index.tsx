@@ -1,19 +1,33 @@
 import KiteWasmPromise, { KiteWasm } from "@risc-v-web-simulator/kite"
-import React, { MutableRefObject, useEffect, useRef, useState } from "react"
+import React, {
+  MutableRefObject,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { FC } from "react"
 import { enhance, tcAsync } from "../../utilities/essentials"
 import { EditorRootFallback } from "./fallback"
 import { serializeError } from "serialize-error"
-import { EditorImpure } from "../Editor"
-import { css, Global, ThemeContext, useTheme } from "@emotion/react"
+import { useTheme } from "@emotion/react"
 import {
   memory_state,
   program_code,
   reg_state,
-} from "../../constants/constants"
-import { useStateWithMemoizedCallback } from "../../hooks/useMemoizedCbState"
+} from "../../constants/editorDefaultState"
+import { useStateWithMemoizedCallback } from "../../hooks/useStateWithMemoizedCallback"
 import { LoadingAnimationIcon } from "../Util/LoadingAnimationIcon"
-import { EditorHeaderPure } from "../Editor/localFragments/EditorHeader"
+import { RVSConstants } from "../../constants"
+import { RVSSettings } from "../../constants/RVSSettings"
+import { ErrorBoundary } from "../Util/WithErrorBoundary"
+import { WHFullLoadingAnimation } from "../Util/WHFullLoadingAnimation"
+
+const EditorImpure = React.lazy(() =>
+  import(`../Editor`).then(({ EditorImpure }) => ({
+    default: EditorImpure,
+  }))
+)
 
 enum WasmRequestStatus {
   LOADING = `LOADING`,
@@ -34,6 +48,9 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
       useStateWithMemoizedCallback(memory_state)
     const [registerState, setRegisterState] =
       useStateWithMemoizedCallback(reg_state)
+    const [RVSSettings, setRVSSettings] = useStateWithMemoizedCallback(
+      RVSConstants.defaultRVSSettings
+    )
 
     useEffect(() => {
       async function loadKiteWasm() {
@@ -60,6 +77,8 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
           setMemoryState,
           codeState,
           setCodeState,
+          RVSSettings,
+          setRVSSettings,
         }}
       />
     )
@@ -74,6 +93,8 @@ export type EditorRootPureProps = {
   setMemoryState: React.Dispatch<React.SetStateAction<string>>
   codeState: string
   setCodeState: React.Dispatch<React.SetStateAction<string>>
+  RVSSettings: RVSSettings
+  setRVSSettings: React.Dispatch<React.SetStateAction<RVSSettings>>
 } & {
   kiteWasmRequestResult: React.MutableRefObject<Error | KiteWasm | null>
 }
@@ -139,14 +160,28 @@ export const EditorRootPure: FC<EditorRootPureProps> =
                 )
               case WasmRequestStatus.SUCCESS:
                 return (
-                  <EditorImpure
-                    {...{
-                      // by this time, kiteWasmRequestResult MUST be this type
-                      kiteWasmRequestResult:
-                        kiteWasmRequestResult as MutableRefObject<KiteWasm>,
-                      ...rest,
-                    }}
-                  />
+                  <ErrorBoundary
+                    Fallback={
+                      <div
+                        css={{
+                          color: `red`,
+                        }}
+                      >
+                        Editor failed to load.
+                      </div>
+                    }
+                  >
+                    <Suspense fallback={<WHFullLoadingAnimation />}>
+                      <EditorImpure
+                        {...{
+                          // by this time, kiteWasmRequestResult MUST be this type
+                          kiteWasmRequestResult:
+                            kiteWasmRequestResult as MutableRefObject<KiteWasm>,
+                          ...rest,
+                        }}
+                      />
+                    </Suspense>
+                  </ErrorBoundary>
                 )
               case WasmRequestStatus.ERROR:
                 return (

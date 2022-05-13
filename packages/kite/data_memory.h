@@ -16,7 +16,7 @@ public:
 
     void connect(data_cache_t *m_cache);                    // Connect to the upper-level cache.
     void load_block(uint64_t m_addr, uint64_t m_block_size);// Load a memory block.
-    void run();                                             // Run the data memory.
+    void run(std::ostringstream& program_log);                                             // Run the data memory.
     void print_state(std::ostringstream& program_log) const;                               // Print memory state.
 
 private:

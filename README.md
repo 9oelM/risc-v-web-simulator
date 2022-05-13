@@ -34,3 +34,4 @@ To enable communication with javascript from Webassembly binary, a few things ha
 - https://stackoverflow.com/questions/21816960/how-to-pass-strings-between-c-and-javascript-via-emscripten
 - https://stackoverflow.com/questions/46815205/how-to-pass-a-string-to-c-code-compiled-with-emscripten-for-webassembly
 - https://stackoverflow.com/questions/59532379/how-to-call-javascript-method-from-c-with-parameters-using-em-js
+- https://marcoselvatici.github.io/WASM_tutorial/
