@@ -118,11 +118,12 @@ void proc_t::writeback(std::ostringstream& program_log) {
                     if (*is_debug_on) {
                         program_log << ticks << " : pipeline flush : restart at PC = "     << pc << endl;
                     }
-                } else {
+                }
+            }
+             else {
                 // No branch prediction is used. The next PC of a branch is set here to avoid
                 // speculative executions.
                 pc = inst->branch_target;
-                }
             }
         }
         // Retire the instruction.
