@@ -51,6 +51,7 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
     const [RVSSettings, setRVSSettings] = useStateWithMemoizedCallback(
       RVSConstants.defaultRVSSettings
     )
+    // useEffect(() => {}, [])
 
     useEffect(() => {
       async function loadKiteWasm() {

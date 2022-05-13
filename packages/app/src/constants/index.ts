@@ -1,4 +1,5 @@
 import { program_code, reg_state, memory_state } from "./editorDefaultState"
+import { matrixCalculationExample } from "./exampleEditorStates"
 import { defaultRVSSettings } from "./RVSSettings"
 
 /**
@@ -12,4 +13,5 @@ export const RVSConstants = {
   program_code,
   reg_state,
   memory_state,
+  matrixCalculationExample,
 }

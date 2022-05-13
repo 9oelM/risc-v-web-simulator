@@ -3,13 +3,13 @@ import { css, Global, ThemeProvider } from "@emotion/react"
 
 const themeDark = {
   text: `#fff`,
+  warnText: `red`,
   linkText: `rgb(61, 225, 61)`,
   background: `#121212`,
   buttonText: `#fff`,
-  buttonTextHover: `#000`,
   buttonBorder: `#fff`,
-  buttonBg: `rgba(255, 255, 255, 0`,
-  buttonBgHover: `rgba(255, 255, 255, 1`,
+  buttonBg: `rgb(61, 225, 61)`,
+  buttonBgHover: `rgb(107, 233, 107)`,
 }
 
 // function createEmotionTheme<T>(theme: T): T {
