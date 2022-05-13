@@ -19,6 +19,8 @@
   ],
   "scripts": {
     "dev": "npm run dev -w packages/app",
+    "build": "npm run compile -w packages/kite && npm run prod -w packages/app",
+    "deploy": "npm run deploy -w packages/app",
     "lint": "eslint .",
     "lint:debug": "eslint . --debug",
     "lint:fix": "eslint . --fix"

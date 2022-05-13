@@ -153,7 +153,7 @@ export const RunButtonPure: FC<RunButtonPureProps> =
           height: 35,
           background: theme.linkText,
           color: theme.text,
-          borderRadius: `5px 5px 0 0`,
+          borderRadius: `5px`,
           border: `1px solid ${theme.buttonBorder}`,
           marginLeft: `auto`,
           transition: `all 0.3s ease-out`,

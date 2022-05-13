@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "./dockerutil.sh -c run"
   },
   "keywords": [],
   "author": "",
