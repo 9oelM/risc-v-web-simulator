@@ -29,9 +29,9 @@ export const SharePanelImpure: FC<SharePanelImpureProps> =
           isLocal
             ? `http://localhost:8080/`
             : `https://9oelm.github.io/risc-v-web-simulator/`
-        }?s=t&c=${toBase64(codeState)}&m=${toBase64(memoryState)}&r=${toBase64(
-          registerState
-        )}`
+        }?s=t&c=${toBase64(codeState)}`
+        // Github pages won't just work for long URI anyway, so only copy code
+        // &m=${toBase64(memoryState)}&r=${toBase64(registerState)
         copyToClipboard2(toBeCopiedUrl)
         setCopyButtonJustClicked(true)
         timeout.current = window.setTimeout(() => {
@@ -97,7 +97,8 @@ export const SharePanelPure: FC<SharePanelPureProps> =
                     display: `block`,
                   }}
                 >
-                  your code, memory and register states with others
+                  your code (excluding memory and register, for technical
+                  reasons)
                 </span>
                 <p
                   css={{
@@ -106,7 +107,7 @@ export const SharePanelPure: FC<SharePanelPureProps> =
                     padding: 0,
                   }}
                 >
-                  (If your code is really long,
+                  (BTW If your code is really long,
                   <span
                     css={{
                       display: `block`,
