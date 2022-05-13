@@ -13,6 +13,8 @@ import { EditorHeaderPure } from "./localFragments/EditorHeader"
 import { ErrorBoundary } from "../Util/WithErrorBoundary"
 import { WHFullLoadingAnimation } from "../Util/WHFullLoadingAnimation"
 import { RVSConstants } from "../../constants"
+import { copyToClipboard2 } from "../../utilities/clipboard"
+import { SharePanelImpure } from "./localFragments/SharePanel"
 
 const SettingsPanelImpure = React.lazy(() =>
   import(`./localFragments/SettingsPanel`).then(({ SettingsPanelImpure }) => ({
@@ -175,6 +177,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                 <Tab>Register</Tab>
                 <Tab>Settings</Tab>
                 <Tab>Examples</Tab>
+                <Tab>Share</Tab>
               </TabList>
               <TabPanel>
                 <textarea
@@ -262,6 +265,29 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                     <ExamplesPanelImpure
                       {...{
                         onClickLoadExample,
+                      }}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </TabPanel>
+              <TabPanel>
+                <ErrorBoundary
+                  Fallback={
+                    <div
+                      css={{
+                        color: `red`,
+                      }}
+                    >
+                      Share panel failed to load.
+                    </div>
+                  }
+                >
+                  <Suspense fallback={<WHFullLoadingAnimation />}>
+                    <SharePanelImpure
+                      {...{
+                        memoryState,
+                        codeState,
+                        registerState,
                       }}
                     />
                   </Suspense>

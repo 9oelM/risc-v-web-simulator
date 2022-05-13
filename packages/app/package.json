@@ -8,8 +8,8 @@
   "private": false,
   "scripts": {
     "test": "jest --config ./jest/jest.config.ts",
-    "dev": "TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack serve --config ./webpack/webpack.config.dev.ts --mode development",
-    "prod": "TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack --config ./webpack/webpack.config.prod.ts --mode production",
+    "dev": "NODE_OPTIONS='--max-http-header-size=100000' TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack serve --config ./webpack/webpack.config.dev.ts --mode development",
+    "prod": "NODE_OPTIONS='--max-http-header-size=100000' TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack --config ./webpack/webpack.config.prod.ts --mode production",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "deploy": "gh-pages -d dist"

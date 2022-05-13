@@ -26,6 +26,7 @@ import {
   LocalStorageManager,
   LocalStorgeState,
 } from "../../utilities/localStorage"
+import { escape } from "lodash"
 
 const EditorImpure = React.lazy(() =>
   import(`../Editor`).then(({ EditorImpure }) => ({
@@ -73,6 +74,37 @@ function useSaveStateToLocalStorage({
   return isEditorStateNewlySaved % 2 === 0
 }
 
+function checkAndUseStateFromURLSearchParams({
+  setRegisterState,
+  setMemoryState,
+  setCodeState,
+}: {
+  setRegisterState: React.Dispatch<React.SetStateAction<string>>
+  setMemoryState: React.Dispatch<React.SetStateAction<string>>
+  setCodeState: React.Dispatch<React.SetStateAction<string>>
+}): boolean {
+  const urlParams = new URLSearchParams(window.location.search)
+  const memory_state = urlParams.get(`m`)
+  const program_code = urlParams.get(`c`)
+  const reg_state = urlParams.get(`r`)
+  const is_share = urlParams.get(`s`)
+  const fromBase64 = (s: string | null) =>
+    window.decodeURIComponent(window.escape(window.atob(s ?? ``)))
+
+  let isUsingURLSearchParams = false
+  if ((reg_state || program_code || memory_state) && is_share) {
+    setRegisterState(fromBase64(reg_state))
+    setCodeState(fromBase64(program_code))
+    setMemoryState(fromBase64(memory_state))
+    isUsingURLSearchParams = true
+  }
+
+  // remove URL search params in case user refreshes again later
+  window.history.pushState({}, document.title, window.location.pathname)
+
+  return isUsingURLSearchParams
+}
+
 function useRestoreStateFromLocalStorage({
   setRegisterState,
   setMemoryState,
@@ -86,8 +118,16 @@ function useRestoreStateFromLocalStorage({
 }) {
   const isFirstMount = useRef(true)
   useEffect(() => {
-    if (isFirstMount.current) isFirstMount.current = false
-    else return
+    if (isFirstMount.current) {
+      const isUsingURLSearchParams = checkAndUseStateFromURLSearchParams({
+        setCodeState,
+        setMemoryState,
+        setRegisterState,
+      })
+      isFirstMount.current = false
+
+      if (isUsingURLSearchParams) return
+    } else return
     const maybeRestoredState =
       LocalStorageManager.restoreStateFromLocalStorage()
     console.log(maybeRestoredState)
