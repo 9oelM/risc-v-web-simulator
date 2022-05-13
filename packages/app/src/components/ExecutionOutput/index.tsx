@@ -15,8 +15,13 @@ export type ExecutionOutputImpureProps = {
 export const ExecutionOutputImpure: FC<ExecutionOutputImpureProps> =
   enhance<ExecutionOutputImpureProps>(({ executionOutput }) => {
     const [animate, setAnimate] = useState(false)
+    const isFirstMount = useRef(true)
     const timeout = useRef<null | number>(null)
     useEffect(() => {
+      if (isFirstMount.current) {
+        isFirstMount.current = false
+        return
+      }
       if (timeout.current) window.clearTimeout(timeout.current)
       setAnimate((prev) => !prev)
       timeout.current = window.setTimeout(() => {
