@@ -93,9 +93,9 @@ function checkAndUseStateFromURLSearchParams({
 
   let isUsingURLSearchParams = false
   if ((reg_state || program_code || memory_state) && is_share) {
-    setRegisterState(fromBase64(reg_state))
-    setCodeState(fromBase64(program_code))
-    setMemoryState(fromBase64(memory_state))
+    if (reg_state) setRegisterState(fromBase64(reg_state))
+    if (program_code) setCodeState(fromBase64(program_code))
+    if (memory_state) setMemoryState(fromBase64(memory_state))
     isUsingURLSearchParams = true
   }
 
