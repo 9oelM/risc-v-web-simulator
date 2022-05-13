@@ -22,6 +22,10 @@ import { RVSConstants } from "../../constants"
 import { RVSSettings } from "../../constants/RVSSettings"
 import { ErrorBoundary } from "../Util/WithErrorBoundary"
 import { WHFullLoadingAnimation } from "../Util/WHFullLoadingAnimation"
+import {
+  LocalStorageManager,
+  LocalStorgeState,
+} from "../../utilities/localStorage"
 
 const EditorImpure = React.lazy(() =>
   import(`../Editor`).then(({ EditorImpure }) => ({
@@ -34,6 +38,61 @@ enum WasmRequestStatus {
   ERROR = `ERROR`,
   SUCCESS = `SUCCESS`,
 }
+
+/**
+ * I was too lazy to integrate the app with redux
+ * which can easily be integrated with redux-persist,
+ * so I am just writing this function to restore state
+ * from localstorage by myself
+ */
+function useSaveStateToLocalStorage({
+  RVSSettings,
+  editor_states: { program_code, reg_state, memory_state },
+}: LocalStorgeState) {
+  const timeout = useRef<null | number>(null)
+  const DEBOUNCE_SECS = 1_000
+  useEffect(() => {
+    if (timeout.current) window.clearTimeout(timeout.current)
+    timeout.current = window.setTimeout(() => {
+      LocalStorageManager.saveStateToLocalStorage({
+        RVSSettings,
+        editor_states: {
+          program_code,
+          reg_state,
+          memory_state,
+        },
+      })
+    }, DEBOUNCE_SECS)
+  }, [RVSSettings, program_code, reg_state, memory_state])
+}
+
+function useRestoreStateFromLocalStorage({
+  setRegisterState,
+  setMemoryState,
+  setCodeState,
+  setRVSSettings,
+}: {
+  setRegisterState: React.Dispatch<React.SetStateAction<string>>
+  setMemoryState: React.Dispatch<React.SetStateAction<string>>
+  setCodeState: React.Dispatch<React.SetStateAction<string>>
+  setRVSSettings: React.Dispatch<React.SetStateAction<RVSSettings>>
+}) {
+  const isFirstMount = useRef(true)
+  useEffect(() => {
+    if (isFirstMount.current) isFirstMount.current = false
+    else return
+    const maybeRestoredState =
+      LocalStorageManager.restoreStateFromLocalStorage()
+    console.log(maybeRestoredState)
+    if (!maybeRestoredState) return
+
+    setMemoryState(maybeRestoredState.editor_states.memory_state)
+    setCodeState(maybeRestoredState.editor_states.program_code)
+    setRegisterState(maybeRestoredState.editor_states.reg_state)
+    setRVSSettings(maybeRestoredState.RVSSettings)
+  }, [setRegisterState, setMemoryState, setCodeState, setRVSSettings])
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type EditorRootImpureProps = {}
 
@@ -55,7 +114,20 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
     const [RVSSettings, setRVSSettings] = useStateWithMemoizedCallback(
       RVSConstants.defaultRVSSettings
     )
-    // useEffect(() => {}, [])
+    useSaveStateToLocalStorage({
+      RVSSettings,
+      editor_states: {
+        program_code: codeState,
+        reg_state: registerState,
+        memory_state: memoryState,
+      },
+    })
+    useRestoreStateFromLocalStorage({
+      setCodeState,
+      setMemoryState,
+      setRegisterState,
+      setRVSSettings,
+    })
 
     useEffect(() => {
       async function loadKiteWasm() {
@@ -93,13 +165,13 @@ export const EditorRootImpure: FC<EditorRootImpureProps> =
 export type EditorRootPureProps = {
   wasmRequestStatus: WasmRequestStatus
   registerState: string
-  setRegisterState: React.Dispatch<React.SetStateAction<string>>
   memoryState: string
-  setMemoryState: React.Dispatch<React.SetStateAction<string>>
   codeState: string
+  setRegisterState: React.Dispatch<React.SetStateAction<string>>
+  setMemoryState: React.Dispatch<React.SetStateAction<string>>
   setCodeState: React.Dispatch<React.SetStateAction<string>>
-  RVSSettings: RVSSettings
   setRVSSettings: React.Dispatch<React.SetStateAction<RVSSettings>>
+  RVSSettings: RVSSettings
 } & {
   kiteWasmRequestResult: React.MutableRefObject<Error | KiteWasm | null>
 }

@@ -20,6 +20,10 @@ export const program_code = `###################################################
 #      UJ-type: jal
 #      No-type: nop
 
+# The example code below implements Euclidean algorithm for GCD.
+# it reads two numbers from x10 and x11, calculates GCD, and
+# puts the result in x10 register.
+# you will see x10 = 3 in the output if you run the code.
 loop:   beq  x11, x0,  exit
         remu x5,  x10, x11
         add  x10, x11, x0

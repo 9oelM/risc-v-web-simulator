@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useMemo } from "react"
+import React, { Suspense, useCallback } from "react"
 import { FC } from "react"
 import { enhance } from "../../utilities/essentials"
 import { EditorFallback } from "./fallback"
@@ -6,7 +6,6 @@ import { EditorFallback } from "./fallback"
 import { jsx, useTheme } from "@emotion/react"
 import { ExecutionOutputImpure } from "../ExecutionOutput"
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs"
-import { reg_state } from "../../constants/editorDefaultState"
 import { EditorRootPureProps } from "../EditorRoot"
 import { RunButtonImpure } from "../RunButton"
 import { useStateWithMemoizedCallback } from "../../hooks/useStateWithMemoizedCallback"
@@ -14,11 +13,16 @@ import { EditorHeaderPure } from "./localFragments/EditorHeader"
 import { ErrorBoundary } from "../Util/WithErrorBoundary"
 import { WHFullLoadingAnimation } from "../Util/WHFullLoadingAnimation"
 import { RVSConstants } from "../../constants"
-import { ExamplesPanelImpure } from "./localFragments/ExamplesPanel"
 
 const SettingsPanelImpure = React.lazy(() =>
   import(`./localFragments/SettingsPanel`).then(({ SettingsPanelImpure }) => ({
     default: SettingsPanelImpure,
+  }))
+)
+
+const ExamplesPanelImpure = React.lazy(() =>
+  import(`./localFragments/ExamplesPanel`).then(({ ExamplesPanelImpure }) => ({
+    default: ExamplesPanelImpure,
   }))
 )
 

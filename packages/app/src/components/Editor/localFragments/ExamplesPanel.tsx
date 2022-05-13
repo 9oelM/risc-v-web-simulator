@@ -3,7 +3,6 @@ import React, { useCallback } from "react"
 import { FC } from "react"
 import { EditorPureProps } from ".."
 import { enhance } from "../../../utilities/essentials"
-import { EditorRootPureProps } from "../../EditorRoot"
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type ExamplesPanelImpureProps = Pick<
@@ -112,7 +111,7 @@ export const ExamplesPanelPure: FC<ExamplesPanelPureProps> =
                 fontSize: `0.8rem`,
               }}
             >
-              {` `} Default example
+              {` `} {`Default (Euclidean algorithm for GCD) example`}
             </p>
           </article>
         </section>
