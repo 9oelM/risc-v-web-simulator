@@ -15,7 +15,8 @@ Detailed instruction on how to use it is found at [the repository of Kite](https
 ### Modification of Kite's code
 To enable communication with javascript from Webassembly binary, a few things have been changed in Kite's code:
 
-- Kite does not receive files as an input anymore. It receives `const char* program_code, const char* memory_state, const char* reg_state` as parameters and runs it. `const char*` is directly supplied from javascirpt.
+- Kite does not receive files as an input anymore. It receives `const char* program_code, const char* memory_state, const char* reg_state` as parameters and runs it. `const char*` is directly supplied from javascript.
+- No more build flags (`-DDEBUG`, `-DDATA_FWD`, `-DBR_PRED`); They are also directly supplied from javascript as well.
 - Kite throws error instead of `cerr` and `exit(1);`. For example: 
     ```cpp
     if(val != 1) {
@@ -27,7 +28,6 @@ To enable communication with javascript from Webassembly binary, a few things ha
 
 ## Todo
 - cleanup duplicate css styles (now just copied and pasted cuz im lazy)
-- responsive design for mobile environments
 
 ## References
 - https://github.com/9oelM/emscripten-cplusplus-webpack-example
