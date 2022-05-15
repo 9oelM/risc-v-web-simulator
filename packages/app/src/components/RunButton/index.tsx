@@ -1,5 +1,5 @@
 import { useTheme } from "@emotion/react"
-import React, { useCallback, useEffect } from "react"
+import React, { KeyboardEventHandler, useCallback, useEffect } from "react"
 import { FC } from "react"
 import { serializeError } from "serialize-error"
 import { enhance } from "../../utilities/essentials"
@@ -33,7 +33,6 @@ export const RunButtonImpure: FC<RunButtonImpureProps> =
       const onRunKiteWasm = useCallback(() => {
         if (!kiteWasmRequestResult.current) return
         if (kiteWasmRequestResult.current instanceof Error) return
-        console.log(kiteWasmRequestResult.current)
 
         const {
           _run_kite_once,
@@ -63,7 +62,6 @@ export const RunButtonImpure: FC<RunButtonImpureProps> =
           `i8`,
           ALLOC_NORMAL
         )
-        console.log(`is_debug_on ${is_debug_on}`)
         const isDebugOnInt8Ptr = _malloc(1)
         const isDataFwdOnInt8Ptr = _malloc(1)
         const isBrPredOnInt8Ptr = _malloc(1)
@@ -83,7 +81,6 @@ export const RunButtonImpure: FC<RunButtonImpureProps> =
             isDataFwdOnInt8Ptr,
             isBrPredOnInt8Ptr
           )
-          console.log(executionOutputCharPtr)
 
           const executionOutputInJSString = UTF8ToString(executionOutputCharPtr)
           setExecutionOutput(`${latestRunTime}\n${executionOutputInJSString}`)
@@ -109,11 +106,14 @@ export const RunButtonImpure: FC<RunButtonImpureProps> =
       }, [codeState, registerState, memoryState, RVSSettings])
 
       useEffect(() => {
-        document.addEventListener(`keypress`, (e) => {
-          console.log(e)
+        function runKiteWasmOnCtrlAltRPress(e: KeyboardEvent) {
           if (e.code !== `KeyR` || !e.altKey || !e.ctrlKey) return
           onRunKiteWasm()
-        })
+        }
+        document.addEventListener(`keypress`, runKiteWasmOnCtrlAltRPress)
+
+        return () =>
+          document.removeEventListener(`keypress`, runKiteWasmOnCtrlAltRPress)
       }, [onRunKiteWasm])
 
       return (
@@ -139,7 +139,6 @@ export const RunButtonPure: FC<RunButtonPureProps> =
 
     return (
       <button
-        // className="react-tabs__tab react-tabs__tab--disabled run-button"
         css={{
           display: `inline-block`,
           borderBottom: `none`,

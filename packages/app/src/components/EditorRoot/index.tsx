@@ -98,7 +98,6 @@ function checkAndUseStateFromURLSearchParams({
     if (memory_state) setMemoryState(fromBase64(memory_state))
     isUsingURLSearchParams = true
   }
-
   // remove URL search params in case user refreshes again later
   window.history.pushState({}, document.title, window.location.pathname)
 

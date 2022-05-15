@@ -6,7 +6,7 @@ const themeDark = {
   warnText: `red`,
   linkText: `rgb(61, 225, 61)`,
   background: `#121212`,
-  buttonText: `#fff`,
+  buttonText: `#121212`,
   buttonBorder: `#fff`,
   buttonBg: `rgb(61, 225, 61)`,
   buttonBgHover: `rgb(107, 233, 107)`,
