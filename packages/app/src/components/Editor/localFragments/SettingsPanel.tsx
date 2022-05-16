@@ -133,8 +133,8 @@ export const SettingsPanelPure: FC<SettingsPanelPureProps> =
                 fontSize: `0.8rem`,
               }}
             >
-              You will see improved performance if this is enabled. Equivalent
-              to -DDATA_FWD flag in Kite. {` `}
+              You may see improved performance if this is enabled. Equivalent to
+              -DDATA_FWD flag in Kite. {` `}
               <a
                 css={{
                   color: theme.linkText,
@@ -180,8 +180,8 @@ export const SettingsPanelPure: FC<SettingsPanelPureProps> =
                 fontSize: `0.8rem`,
               }}
             >
-              You will see improved performance if this is enabled. Equivalent
-              to -DBR_PRED flag in Kite. {` `}
+              You may see improved performance if this is enabled. Equivalent to
+              -DBR_PRED flag in Kite. {` `}
               <a
                 css={{
                   color: theme.linkText,
