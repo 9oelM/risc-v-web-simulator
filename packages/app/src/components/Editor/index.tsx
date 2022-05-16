@@ -177,7 +177,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                 <Tab>Register</Tab>
                 <Tab>Settings</Tab>
                 <Tab>Examples</Tab>
-                <Tab>Share</Tab>
+                {/* <Tab>Share</Tab> */}
               </TabList>
               <TabPanel>
                 <textarea
@@ -270,7 +270,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                   </Suspense>
                 </ErrorBoundary>
               </TabPanel>
-              <TabPanel>
+              {/* <TabPanel>
                 <ErrorBoundary
                   Fallback={
                     <div
@@ -292,7 +292,7 @@ export const EditorPure: FC<EditorPureProps> = enhance<EditorPureProps>(
                     />
                   </Suspense>
                 </ErrorBoundary>
-              </TabPanel>
+              </TabPanel> */}
             </Tabs>
           </section>
           <section
