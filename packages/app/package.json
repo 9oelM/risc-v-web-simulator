@@ -12,7 +12,8 @@
     "prod": "NODE_OPTIONS='--max-http-header-size=100000' TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack --config ./webpack/webpack.config.prod.ts --mode production",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "deploy": "gh-pages -d dist"
+    "deploy-pages": "gh-pages -d dist",
+    "deploy-surge": "surge --project ./dist --domain riscv.surge.sh"
   },
   "devDependencies": {
     "@babel/core": "7.16.7",
@@ -45,6 +46,7 @@
     "html-webpack-plugin": "5.5.0",
     "jest": "27.4.7",
     "style-loader": "^3.3.1",
+    "surge": "^0.23.1",
     "ts-jest": "27.1.2",
     "ts-loader": "9.2.6",
     "ts-node": "10.4.0",
