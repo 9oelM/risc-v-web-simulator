@@ -1,0 +1,7 @@
+{
+  "name": "risc-v-web-simulator",
+  "version": 2,
+  "routes": [
+      { "src": "/robots.txt", "dest": "packages/app/public/robots.txt" }
+  ]
+}

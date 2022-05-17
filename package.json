@@ -19,21 +19,25 @@
   ],
   "scripts": {
     "dev": "npm run dev -w packages/app",
-    "build": "npm run compile -w packages/kite && npm run prod -w packages/app && echo \"riscv.surge.sh\" > packages/app/dist/CNAME",
+    "vercel-build": "npm run prod -w packages/app",
+    "build": "npm run compile -w packages/kite && npm run prod -w packages/app",
     "deploy": "npm run deploy-pages -w packages/app && npm run deploy-surge -w packages/app",
     "build-and-deploy": "npm run build && npm run deploy",
     "lint": "eslint .",
     "lint:debug": "eslint . --debug",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "vercel": "vercel"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "5.9.1",
     "@typescript-eslint/parser": "5.9.1",
+    "copy-webpack-plugin": "^10.2.4",
     "eslint": "8.6.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-react": "7.28.0",
     "prettier": "2.5.1",
-    "tsconfig-paths": "^4.0.0"
+    "tsconfig-paths": "^4.0.0",
+    "vercel": "^24.2.3"
   }
 }

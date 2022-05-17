@@ -1,6 +1,7 @@
 import path from "path"
 import webpack from "webpack"
 import HtmlWebpackPlugin from "html-webpack-plugin"
+import CopyWebpackPlugin from "copy-webpack-plugin"
 
 export const commonConfig: webpack.Configuration = {
   entry: `./src/index.tsx`,
@@ -73,6 +74,9 @@ export const commonConfig: webpack.Configuration = {
     new HtmlWebpackPlugin({
       template: path.join(__dirname, `..`, `public`, `index.html`),
       favicon: path.join(__dirname, `..`, `public`, `risc-v-logo.png`),
+    }),
+    new CopyWebpackPlugin({
+      patterns: [{ from: `public/robots.txt`, to: `robots.txt` }],
     }),
   ],
 }

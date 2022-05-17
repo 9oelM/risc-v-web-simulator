@@ -4,7 +4,7 @@ Yet another RISC-V Simulator on the web, for fun. Based on [Kite](https://github
 
 ## Use it!
 
-https://9oelm.github.io/risc-v-web-simulator/
+https://riscv.vercel.app/
 
 ## Instructions
 
