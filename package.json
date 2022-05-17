@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "dev": "npm run dev -w packages/app",
-    "build": "npm run compile -w packages/kite && npm run prod -w packages/app",
+    "build": "npm run compile -w packages/kite && npm run prod -w packages/app && echo \"riscv.surge.sh\" > packages/app/dist/CNAME",
     "deploy": "npm run deploy-pages -w packages/app && npm run deploy-surge -w packages/app",
     "build-and-deploy": "npm run build && npm run deploy",
     "lint": "eslint .",
