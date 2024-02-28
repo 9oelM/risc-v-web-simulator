@@ -93,7 +93,7 @@ void alu_t::run(inst_t *m_inst, std::ostringstream& program_log) {
         case op_bne:  { m_inst->branch_target = (m_inst->rs1_val != m_inst->rs2_val) ? 
                                                 (m_inst->pc + (m_inst->imm << 1)) :
                                                 (m_inst->pc + 4); break; }
-        case op_lui:  { m_inst->rd_val = m_inst->imm << 20; break; }
+        case op_lui:  { m_inst->rd_val = m_inst->imm << 12; break; }
         case op_jal:  { m_inst->rd_val = m_inst->pc + 4; break; }
         default:      { break; } // Nothing to do
     }
